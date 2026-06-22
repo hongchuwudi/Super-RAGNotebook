@@ -37,9 +37,9 @@ flowchart LR
 
 | 路径 | 说明 |
 | --- | --- |
-| `start.py` | 本地开发一键启动脚本，负责 `.env`、依赖检查、数据库、迁移、后端和前端进程 |
+| `start.py` | 本地开发一键启动脚本，负责 `config/.env`、依赖检查、数据库、迁移、后端和前端进程 |
 | `docker-compose.yml` | 本地 PostgreSQL + pgvector 服务 |
-| `.env.example` | 一键启动主配置模板 |
+| `config/.env.example` | 一键启动主配置模板 |
 | `README.md` | 面向使用者的说明 |
 | `docs/` | 面向开发和维护的文档 |
 | `images/` | README 截图 |
@@ -82,9 +82,9 @@ flowchart LR
 `python start.py` 的流程：
 
 1. 读取参数：`--install`、`--backend-only`、`--frontend-only`、`--skip-db`、`--skip-migrate` 等。
-2. 确保根目录 `.env` 存在，优先从 `.env.example` 创建。
-3. 如 `ALIYUN_ACCESS_KEY_SECRET` 指向 `apikey.txt` 且文件不存在，创建模板文件。
-4. 读取 `.env`，解析文件型密钥，并注入 `RAGNOTEBOOK_ENV_INJECTED=1`。
+2. 确保 `config/.env` 存在，优先从 `config/.env.example` 创建。
+3. 如 `ALIYUN_ACCESS_KEY_SECRET` 指向 `apikey.txt` 且文件不存在，创建 `config/apikey.txt` 模板文件。
+4. 读取 `config/.env`，解析文件型密钥，并注入 `RAGNOTEBOOK_ENV_INJECTED=1`。
 5. 设置 `PYTHONPATH=backend/src`。
 6. 可选安装依赖：后端优先 `uv sync`，前端运行 `npm install`。
 7. 检查后端依赖、`python-magic` 原生库和前端 `node_modules`。
@@ -215,10 +215,9 @@ flowchart LR
 
 | 配置 | 来源 |
 | --- | --- |
-| 服务端口、数据库、CORS、JWT、限流 | 根目录 `.env` |
-| 后端单独启动回退 | `backend/.env` |
+| 服务端口、数据库、CORS、JWT、限流 | `config/.env` |
 | 前端代理目标 | `VITE_BACKEND_TARGET` |
-| 阿里云真实 key | `apikey.txt` |
+| 阿里云真实 key | `config/apikey.txt` |
 | 向量库和切片 | `backend/src/app/config/vector_store.yaml` |
 | Prompt 映射 | `backend/src/app/config/prompt.yaml` |
 | Agent 配置 | `backend/src/app/config/agent.yaml` |
@@ -318,4 +317,4 @@ $env:PYTHONPATH = "src"
 - 关系表变更必须新增 Alembic 迁移。
 - 向量数据 metadata 必须保留可追踪字段。
 - Prompt 放在 `backend/src/app/prompt/`，避免长提示词硬编码。
-- 运行时数据、真实 `.env`、密钥、模型文件和数据库卷不提交。
+- 运行时数据、真实 `config/.env`、密钥、模型文件和数据库卷不提交。

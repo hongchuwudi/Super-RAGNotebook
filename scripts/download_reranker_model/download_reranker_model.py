@@ -100,7 +100,7 @@ def main() -> int:
 
     print(f"实际模型目录: {actual_model_path}")
     print()
-    print("完成。请确认 .env 中配置:")
+    print("完成。请确认 config/.env 中配置:")
     print(f"RERANKER_MODEL_PATH={target_arg}")
     return 0
 

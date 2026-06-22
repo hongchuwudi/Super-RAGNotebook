@@ -8,7 +8,7 @@
 
 1. **统一数据底座**：让关系数据、向量数据、运行态数据都进入 PostgreSQL 体系，减少本地部署组件数量。
 2. **增强学习闭环**：在笔记、知识库和问答之外，补充快速测试与思维导图，让知识可以被回顾、测验和结构化。
-3. **提高可维护性**：引入 Alembic 迁移、统一 `.env`、一键启动脚本、开发者文档和 OpenAPI 快照。
+3. **提高可维护性**：引入 Alembic 迁移、统一 `config/.env`、一键启动脚本、开发者文档和 OpenAPI 快照。
 
 ## 主要变化
 
@@ -18,8 +18,8 @@
 | 向量库 | pgvector 统一存储知识库切片和笔记向量 |
 | 迁移 | Alembic 管理表结构和 pgvector 初始化 |
 | 前端 | Vue3 + TypeScript + Vite + Pinia |
-| 启动 | 根目录 `start.py` 统一读取 `.env`，启动数据库、迁移、后端和前端 |
-| 配置 | 根目录 `.env` 为主配置，后端单独运行时可回退 `backend/.env` |
+| 启动 | 根目录 `start.py` 统一读取 `config/.env`，启动数据库、迁移、后端和前端 |
+| 配置 | `config/.env` 为主配置，`config/apikey.txt` 保存真实模型 API Key |
 | API | 静态 `backend/openapi.json` 与运行时 `/docs` 同步 |
 | 文档 | README、开发者指南、模型配置和排错文档按当前代码重写 |
 

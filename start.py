@@ -15,11 +15,10 @@ from urllib.parse import unquote, urlparse
 ROOT = Path(__file__).resolve().parent
 BACKEND_DIR = ROOT / "backend"
 FRONTEND_DIR = ROOT / "front"
-GLOBAL_ENV_FILE = ROOT / ".env"
-GLOBAL_ENV_EXAMPLE = ROOT / ".env.example"
-API_KEY_FILE = ROOT / "apikey.txt"
-BACKEND_ENV_FILE = BACKEND_DIR / ".env"
-ENV_EXAMPLE = BACKEND_DIR / ".env.example"
+CONFIG_DIR = ROOT / "config"
+GLOBAL_ENV_FILE = CONFIG_DIR / ".env"
+GLOBAL_ENV_EXAMPLE = CONFIG_DIR / ".env.example"
+API_KEY_FILE = CONFIG_DIR / "apikey.txt"
 UVICORN_LOG_CONFIG = BACKEND_DIR / "src" / "app" / "config" / "uvicorn_log_config.json"
 INJECTED_ENV_FLAG = "RAGNOTEBOOK_ENV_INJECTED"
 FILE_BACKED_SECRET_KEYS = ("ALIYUN_ACCESS_KEY_SECRET",)
@@ -64,20 +63,14 @@ def backend_python() -> str:
 
 
 def ensure_env_file() -> None:
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     if GLOBAL_ENV_FILE.exists():
         return
     if GLOBAL_ENV_EXAMPLE.exists():
         shutil.copyfile(GLOBAL_ENV_EXAMPLE, GLOBAL_ENV_FILE)
-        log("Created .env from .env.example. Review model/API settings if needed.")
+        log("Created config/.env from config/.env.example. Review model/API settings if needed.")
         return
-    if BACKEND_ENV_FILE.exists():
-        shutil.copyfile(BACKEND_ENV_FILE, GLOBAL_ENV_FILE)
-        log("Created .env from backend/.env. start.py will inject this file into backend and frontend processes.")
-        return
-    if not ENV_EXAMPLE.exists():
-        fail(".env is missing and backend/.env.example was not found.")
-    shutil.copyfile(ENV_EXAMPLE, GLOBAL_ENV_FILE)
-    log("Created .env from backend/.env.example. Review model/API settings if needed.")
+    fail("config/.env is missing and config/.env.example was not found.")
 
 
 def read_env_file(path: Path) -> dict[str, str]:
@@ -152,13 +145,13 @@ def ensure_file_backed_secret_files() -> None:
             "your_api_key_here\n",
             encoding="utf-8",
         )
-        log("Created apikey.txt. Put the real API key on its only line if using Aliyun models.")
+        log("Created config/apikey.txt. Put the real API key on its only line if using Aliyun models.")
 
 
 def required_env(env: dict[str, str], key: str) -> str:
     value = env.get(key, "").strip()
     if not value:
-        fail(f"{key} is required in .env")
+        fail(f"{key} is required in config/.env")
     return value
 
 
@@ -167,7 +160,7 @@ def env_int(env: dict[str, str], key: str) -> int:
     try:
         return int(value)
     except ValueError:
-        fail(f"{key} must be an integer in .env, got: {value}")
+        fail(f"{key} must be an integer in config/.env, got: {value}")
 
 
 def env_bool(env: dict[str, str], key: str, default: bool = False) -> bool:
@@ -225,8 +218,8 @@ def validate_database_config(env: dict[str, str]) -> None:
 
     if conflicts:
         fail(
-            ".env has conflicting PostgreSQL settings. DATABASE_URL takes priority. "
-            "Make DATABASE_URL consistent with POSTGRES_* or remove DATABASE_URL.\n"
+            "config/.env has conflicting PostgreSQL settings. DATABASE_URL takes priority. "
+            "Make DATABASE_URL consistent with POSTGRES_* or remove DATABASE_URL in config/.env.\n"
             + "\n".join(conflicts)
         )
 
@@ -358,7 +351,7 @@ def start_postgres(args: argparse.Namespace, env: dict[str, str]) -> None:
     host, port = db_endpoint(env)
     log(f"Waiting for PostgreSQL at {host}:{port} ...")
     if not wait_for_port(host, port, args.db_timeout):
-        fail(f"PostgreSQL is not reachable at {host}:{port}. Start it manually or fix .env.")
+        fail(f"PostgreSQL is not reachable at {host}:{port}. Start it manually or fix config/.env.")
 
 
 def run_migrations(args: argparse.Namespace, env: dict[str, str]) -> None:
@@ -368,7 +361,7 @@ def run_migrations(args: argparse.Namespace, env: dict[str, str]) -> None:
         run_checked([backend_python(), "-m", "app.db.pg_auto_init"], BACKEND_DIR, env)
     except subprocess.CalledProcessError as exc:
         fail(
-            "PostgreSQL initialization failed. Check .env credentials and confirm the "
+            "PostgreSQL initialization failed. Check config/.env credentials and confirm the "
             "PostgreSQL user/database already exist. If you changed POSTGRES_USER or "
             "POSTGRES_PASSWORD after Docker volume creation, update the existing database user "
             "or recreate the local volume.",
@@ -472,12 +465,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--skip-migrate", action="store_true", help="Do not run Alembic migrations.")
     parser.add_argument("--backend-only", action="store_true", help="Start only the backend service.")
     parser.add_argument("--frontend-only", action="store_true", help="Start only the frontend service.")
-    parser.add_argument("--backend-host", help="Backend host. Defaults to BACKEND_HOST in .env.")
-    parser.add_argument("--backend-port", type=int, help="Backend port. Defaults to BACKEND_PORT in .env.")
-    parser.add_argument("--frontend-host", help="Frontend host. Defaults to FRONTEND_HOST in .env.")
-    parser.add_argument("--frontend-port", type=int, help="Frontend port. Defaults to FRONTEND_PORT in .env.")
+    parser.add_argument("--backend-host", help="Backend host. Defaults to BACKEND_HOST in config/.env.")
+    parser.add_argument("--backend-port", type=int, help="Backend port. Defaults to BACKEND_PORT in config/.env.")
+    parser.add_argument("--frontend-host", help="Frontend host. Defaults to FRONTEND_HOST in config/.env.")
+    parser.add_argument("--frontend-port", type=int, help="Frontend port. Defaults to FRONTEND_PORT in config/.env.")
     parser.add_argument("--strict-ports", action="store_true", help="Fail instead of selecting a free port when a port is busy.")
-    parser.add_argument("--db-timeout", type=int, help="Seconds to wait for PostgreSQL. Defaults to DB_STARTUP_TIMEOUT in .env.")
+    parser.add_argument("--db-timeout", type=int, help="Seconds to wait for PostgreSQL. Defaults to DB_STARTUP_TIMEOUT in config/.env.")
     args = parser.parse_args()
 
     if args.backend_only and args.frontend_only:

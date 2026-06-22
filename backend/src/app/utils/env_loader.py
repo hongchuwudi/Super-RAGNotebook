@@ -18,6 +18,11 @@ def backend_root() -> Path:
     return Path(__file__).resolve().parents[3]
 
 
+def config_env_file(backend_dir: str | Path | None = None) -> Path:
+    root = Path(backend_dir) if backend_dir is not None else backend_root()
+    return root.parent / "config" / ".env"
+
+
 def _secret_file_candidate(env_file: Path, value: str) -> Path | None:
     value = value.strip().strip('"').strip("'")
     if not value or value == "your_api_key" or value.startswith(("sk-", "ak-")):
@@ -64,16 +69,15 @@ def resolve_file_backed_secrets(env_file: str | Path) -> None:
 
 
 def load_backend_env(backend_dir: str | Path | None = None) -> bool:
-    """Load backend/.env only for manual backend runs.
+    """Load config/.env only for manual backend runs.
 
-    start.py injects the root .env into child process environments and sets
-    RAGNOTEBOOK_ENV_INJECTED=1. In that mode backend/.env must not be read.
+    start.py injects config/.env into child process environments and sets
+    RAGNOTEBOOK_ENV_INJECTED=1. In that mode config/.env must not be read again.
     """
     if is_env_injected():
         return False
 
-    root = Path(backend_dir) if backend_dir is not None else backend_root()
-    env_file = root / ".env"
+    env_file = config_env_file(backend_dir)
     loaded = load_dotenv(env_file)
     resolve_file_backed_secrets(env_file)
     return loaded

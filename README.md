@@ -28,7 +28,7 @@
 | 向量检索 | PostgreSQL pgvector 存储知识库与笔记向量，统一用户隔离 |
 | 数据迁移 | Alembic 管理表结构和 pgvector 初始化 |
 | 前端 | Vue3 + TypeScript + Vite + Pinia |
-| 启动方式 | 根目录 `start.py` 统一读取 `.env`，启动数据库、迁移、后端和前端 |
+| 启动方式 | 根目录 `start.py` 统一读取 `config/.env`，启动数据库、迁移、后端和前端 |
 | 新增能力 | NotebookLM 风格快速测试、交互式思维导图、统一运行态表、OpenAPI 快照 |
 
 完整改进说明见 [docs/project_develop.md](./docs/project_develop.md)。
@@ -92,9 +92,9 @@ python start.py
 
 `start.py` 会执行以下工作：
 
-1. 如果根目录 `.env` 不存在，从 `.env.example` 创建。
-2. 如果配置了 `ALIYUN_ACCESS_KEY_SECRET=apikey.txt` 且文件不存在，创建被 Git 忽略的 `apikey.txt`。
-3. 读取根目录 `.env`，并注入给 PostgreSQL、Alembic、FastAPI 和 Vite。
+1. 如果 `config/.env` 不存在，从 `config/.env.example` 创建。
+2. 如果配置了 `ALIYUN_ACCESS_KEY_SECRET=apikey.txt` 且文件不存在，创建被 Git 忽略的 `config/apikey.txt`。
+3. 读取 `config/.env`，并注入给 PostgreSQL、Alembic、FastAPI 和 Vite。
 4. 通过 Docker Compose 启动 PostgreSQL。
 5. 当数据库还没有业务表时，执行 Alembic 迁移，初始化关系表、运行态表和 pgvector 表。
 6. 启动后端和前端开发服务。
@@ -143,7 +143,7 @@ docker compose up -d postgres
 
 ## 配置说明
 
-根目录 `.env` 是一键启动的主配置文件。`backend/.env` 只作为手动单独启动后端时的回退配置，`front/.env.example` 只用于前端独立启动参考。
+`config/.env` 是一键启动和后端运行的主配置文件。`front/.env.example` 只用于前端独立启动参考。
 
 最小配置示例：
 
@@ -183,7 +183,7 @@ SECRET_KEY=change-me
 ALGORITHM=HS256
 ```
 
-真实模型 API Key 请写入根目录 `apikey.txt`，不要提交，文件内只放一行 key：
+真实模型 API Key 请写入 `config/apikey.txt`，不要提交，文件内只放一行 key：
 
 ```txt
 your_api_key_here
@@ -234,43 +234,22 @@ chunk_overlap: 20
 
 ```text
 ├── backend/
-│   ├── src/
-│   │   ├── main.py                 # FastAPI 应用入口
-│   │   └── app/
-│   │       ├── agent/              # Agent 工具与流式执行
-│   │       ├── cache/              # PostgreSQL 缓存封装
-│   │       ├── config/             # YAML 配置
-│   │       ├── core/               # 响应、异常、日志、限流、后台初始化
-│   │       ├── db/                 # 数据库连接、迁移启动、运行态存储
-│   │       ├── models/             # SQLAlchemy ORM
-│   │       ├── prompt/             # 提示词模板
-│   │       ├── rag/                # 文档处理、向量库、检索、重排序
-│   │       ├── router/             # FastAPI 路由
-│   │       ├── schemas/            # Pydantic 模型
-│   │       ├── services/           # 业务服务
-│   │       └── utils/              # 配置、文件、鉴权、模型工厂
-│   ├── alembic/                    # 数据库迁移
-│   ├── openapi.json                # 当前 API 快照
-│   ├── pyproject.toml
-│   └── requirements.txt
+│   ├── src/                        # FastAPI 应用、业务模块、RAG 和数据库代码
+│   ├── alembic/                    # Alembic 数据库迁移
+│   ├── test/                       # 后端契约测试和演示数据夹具
+│   └── openapi.json                # 当前 API 快照
 ├── front/
-│   ├── src/
-│   │   ├── api/                    # 请求封装与 endpoints
-│   │   ├── components/             # 通用组件
-│   │   ├── router/                 # 路由和守卫
-│   │   ├── stores/                 # Pinia store
-│   │   ├── types/                  # TypeScript 类型
-│   │   └── views/                  # 页面
-│   └── package.json
-├── docs/
-│   ├── developer_guide.md          # 开发者指南
-│   ├── modelscope_model.md         # 重排序模型说明
-│   ├── project_develop.md          # 改进说明
-│   └── troubleshooting.md          # 故障排除
+│   ├── src/                        # Vue3 页面、组件、API 封装、路由和状态
+│   └── package.json                # 前端依赖与脚本
+├── config/                         # 本地启动配置模板；真实 .env 和 apikey 被忽略
+├── docs/                           # 开发、排错、模型和逐文件结构文档
+├── scripts/                        # 演示数据、模型下载和 PostgreSQL 辅助脚本
 ├── images/                         # README 截图
 ├── docker-compose.yml
 └── start.py
 ```
+
+详细树状结构和逐文件用途见 [docs/file.md](./docs/file.md)。
 
 ## API 文档
 
@@ -295,6 +274,7 @@ chunk_overlap: 20
 ## 开发文档
 
 - [开发者指南](./docs/developer_guide.md)：架构、数据流、扩展路径和维护约定。
+- [文件结构说明](./docs/file.md)：用树状结构逐文件记录项目结构和每个文件的作用。
 - [改进说明](./docs/project_develop.md)：本改进版相对上游的主要变化。
 - [模型配置](./docs/modelscope_model.md)：重排序模型下载、自动加载和环境变量。
 - [故障排除](./docs/troubleshooting.md)：常见启动、数据库、模型、上传和前端代理问题。
@@ -303,10 +283,10 @@ chunk_overlap: 20
 
 常见入口：
 
-- API Key 错误：检查 `.env` 中 `ALIYUN_ACCESS_KEY_SECRET` 是否指向 `apikey.txt`，并确认文件内只有一行真实 key。
+- API Key 错误：检查 `config/.env` 中 `ALIYUN_ACCESS_KEY_SECRET` 是否指向 `apikey.txt`，并确认 `config/apikey.txt` 内只有一行真实 key。
 - 数据库连接失败：确认 `docker compose up -d postgres` 已启动，且 `DATABASE_URL` 与 `POSTGRES_*` 一致。
 - pgvector 迁移失败：确认数据库可执行 `CREATE EXTENSION vector`，本地建议使用默认 Compose 镜像。
-- 向量维度不匹配：确认 `.env` 的 `EMBEDDING_DIM` 与当前嵌入模型输出一致。
+- 向量维度不匹配：确认 `config/.env` 的 `EMBEDDING_DIM` 与当前嵌入模型输出一致。
 - 前端无法访问后端：检查 `VITE_BACKEND_TARGET`、后端端口和 `CORS_ALLOW_ORIGINS`。
 
 更多内容见 [docs/troubleshooting.md](./docs/troubleshooting.md)。

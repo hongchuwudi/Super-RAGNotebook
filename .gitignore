@@ -6,6 +6,8 @@
 !.env.example
 !*/.env.example
 apikey.txt
+config/.env
+config/apikey.txt
 *.pem
 *.key
 *.crt

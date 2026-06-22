@@ -211,14 +211,10 @@ def load_seed_env() -> None:
 
     from app.utils.env_loader import resolve_file_backed_secrets
 
-    root_env = REPO_ROOT / ".env"
-    backend_env = BACKEND_DIR / ".env"
-    if root_env.is_file():
-        load_dotenv(root_env, override=False)
-        resolve_file_backed_secrets(root_env)
-    if backend_env.is_file():
-        load_dotenv(backend_env, override=False)
-        resolve_file_backed_secrets(backend_env)
+    config_env = REPO_ROOT / "config" / ".env"
+    if config_env.is_file():
+        load_dotenv(config_env, override=False)
+        resolve_file_backed_secrets(config_env)
 
 
 def validate_environment() -> tuple[list[str], list[str]]:

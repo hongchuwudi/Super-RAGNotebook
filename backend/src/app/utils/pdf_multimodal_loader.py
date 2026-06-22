@@ -12,7 +12,7 @@ from app.utils.image_extractor import extract_images_from_pdf
 from app.utils.path_tool import get_abstract_path
 from app.utils.vision_service import VisionService
 
-# 环境变量配置项（可被 .env 覆盖），用于控制多模态 PDF 加载的行为：
+# 环境变量配置项（可被 config/.env 覆盖），用于控制多模态 PDF 加载的行为：
 # - BATCH_SIZE:    每批次发送给视觉模型的页数（越大越快，但受限于视觉模型的上下文窗口）
 # - DEDUP_ENABLED: 是否对视觉相似的页面去重（如 PPT 模板页、重复的页眉页脚）
 # - DEDUP_THRESHOLD: 感知哈希的汉明距离阈值，越小去重越严格
