@@ -1,0 +1,99 @@
+# RAGNotebook gitignore
+
+## Secrets and local environment
+.env
+.env.*
+!.env.example
+!*/.env.example
+apikey.txt
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+## Runtime data
+data/
+backend/data/
+logs/
+backend/logs/
+uploads/
+tmp/
+temp/
+*.tmp
+*.temp
+*.log
+*.db
+*.sqlite
+*.sqlite3
+chromadb/
+langchain-*/
+
+## Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+.python-version.local
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyre/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+.eggs/
+build/
+
+## Node and frontend
+node_modules/
+front/node_modules/
+dist/
+front/dist/
+dist-ssr/
+front/dist-ssr/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+## Editor and IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+
+## OS metadata
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+.DS_Store
+.AppleDouble
+.LSOverride
+
+## Notebook and local caches
+.ipynb_checkpoints/
+.cache/
+/models/
+
+## Local AI and coding assistant state
+.agents/
+.codex/
+.claude/
+.opencode/
+.omo/
+.mimocode
+.trae
+.codegraph/
+skills-lock.json
